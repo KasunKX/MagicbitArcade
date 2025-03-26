@@ -25,29 +25,36 @@ const MqttController = () => {
 
 
   useEffect(() => {
+    const handleKeyDown = (event) => {
+      console.log(event.key)
+      if (event.key === "ArrowUp" || event.key == "w") sendCommand("fwd");
+      else if (event.key === "ArrowDown" || event.key == "s") sendCommand("bwd");
+      else if(event.key === " ") sendCommand("hit")
+    };
+  
+    const handleKeyUp = (event) => {
+      console.log("Key up");
+      if (event.key === "ArrowUp" || event.key == "w" || event.key === "ArrowDown" || event.key == "s") sendCommand("stp");
+    };
+  
     if (connected) {
-      window.addEventListener("keydown", (event) => {
-          if (event.key === "ArrowUp") {
-            sendCommand("fwd");
-          } else if (event.key === "ArrowDown") {
-            sendCommand("bwd");
-          } else if (event.key === " ") {
-            sendCommand("stp");
-          }
-        }
-      );
-  }
-    return () => {
-      window.removeEventListener("keydown", () => {});
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
     }
-    
-  },[connected]);
+  
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [connected]);
+  
+  
 
     
   const sendCommand = (command) => {
     if (client && connected) {
       console.log(`Sending command: ${command}`);
-      client.publish(mqttTopic, JSON.stringify({id:"asdfasdfasdfasdf",command:command}));
+      client.publish(mqttTopic, JSON.stringify({id:"asdfasdfasdfasdf",command:command}), { qos: 0 });
     } else {
       console.log("MQTT client is not connected.");
     }
